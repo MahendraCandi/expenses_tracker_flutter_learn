@@ -11,3 +11,9 @@ This apps covers:
 * Fractional size box to change box size dynamically
 * flutter Theme Data
 * Dark mode
+* lock device layout
+* use safe area to avoid front camera
+* widget size preferences & constraint
+* MediaQuery
+* LayoutBuilder
+* using a condition to make screen responsive

@@ -81,74 +81,141 @@ class _AddExpenseState extends State<AddExpense> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
-      child: Column(
-        children: [
-          TextField(
-            // onChanged: _saveTitle,
-            controller: _titleController,
-            maxLength: 50,
-            decoration: const InputDecoration(
-              label: Text("Title"),
+    // to get keyboard size that used in screen.
+    // to adjust the form in landscaped mode
+    var keyboardSpace = MediaQuery.of(context).viewInsets.bottom;
+
+    // instead using media query to make screen responsive, we could use LayoutBuilder to get width and height max size
+    return LayoutBuilder(builder: (context, constraint) {
+      var maxWidth = constraint.maxWidth;
+
+      return SizedBox(
+        height: double.infinity,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, keyboardSpace + 16),
+            child: Column(
+              children: [
+                if (isLandscaped(maxWidth))
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: titleInputText()),
+                      const SizedBox(width: 8),
+                      Expanded(child: amountInputText()),
+                    ],
+                  )
+                else
+                  titleInputText(),
+                if (isLandscaped(maxWidth))
+                  Row(
+                    children: [
+                      categoryDropdown(),
+                      const SizedBox(width: 16),
+                      Expanded(child: dateInputPicker()),
+                    ],
+                  )
+                else
+                  Row(
+                    children: [
+                      Expanded(child: amountInputText()),
+                      const SizedBox(width: 16),
+                      Expanded(child: dateInputPicker()),
+                    ],
+                  ),
+                const SizedBox(height: 8),
+                if (isLandscaped(maxWidth))
+                  Row(
+                    children: [
+                      const Spacer(),
+                      saveButton(),
+                      cancelButton(context),
+                    ],
+                  )
+                else
+                  Row(
+                    children: [
+                      categoryDropdown(),
+                      const Spacer(),
+                      saveButton(),
+                      cancelButton(context),
+                    ],
+                  ),
+              ],
             ),
           ),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _amountController,
-                  decoration: const InputDecoration(
-                    prefixText: "\$",
-                    label: Text("Amount"),
-                  ),
-                  keyboardType: TextInputType.number,
-                ),
+        ),
+      );
+    });
+  }
+
+  ElevatedButton cancelButton(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () {
+        Navigator.pop(context);
+      },
+      child: const Text("Cancel"),
+    );
+  }
+
+  ElevatedButton saveButton() {
+    return ElevatedButton(
+      onPressed: _submitExpense,
+      child: const Text("Save"),
+    );
+  }
+
+  DropdownButton<Category> categoryDropdown() {
+    return DropdownButton(
+      value: _selectedCategory,
+      items: Category.values
+          .map(
+            (e) => DropdownMenuItem(
+              value: e,
+              child: Text(
+                e.name.toUpperCase(),
               ),
-              const SizedBox(
-                width: 16,
-              ),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(_selectedDate == null ? "No date selected" : dateFormatter.format(_selectedDate!)),
-                    IconButton(onPressed: _openDatePicker, icon: const Icon(Icons.calendar_month))
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8,),
-          Row(
-            children: [
-              DropdownButton(
-                value: _selectedCategory,
-                items: Category.values.map(
-                  (e) => DropdownMenuItem(
-                    value: e,
-                    child: Text(
-                      e.name.toUpperCase(),
-                    ),
-                  ),
-                ).toList(),
-                onChanged: _setCategory,
-              ),
-              const Spacer(),
-              ElevatedButton(
-                onPressed: _submitExpense,
-                child: const Text("Save"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text("Cancel"),
-              )
-            ],
+            ),
           )
-        ],
+          .toList(),
+      onChanged: _setCategory,
+    );
+  }
+
+  Row dateInputPicker() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(_selectedDate == null
+            ? "No date selected"
+            : dateFormatter.format(_selectedDate!)),
+        IconButton(
+            onPressed: _openDatePicker, icon: const Icon(Icons.calendar_month))
+      ],
+    );
+  }
+
+  bool isLandscaped(double maxWidth) => maxWidth > 600;
+
+  TextField amountInputText() {
+    return TextField(
+      controller: _amountController,
+      decoration: const InputDecoration(
+        prefixText: "\$",
+        label: Text("Amount"),
+      ),
+      keyboardType: TextInputType.number,
+    );
+  }
+
+  TextField titleInputText() {
+    return TextField(
+      // onChanged: _saveTitle,
+      controller: _titleController,
+      maxLength: 50,
+      decoration: const InputDecoration(
+        label: Text("Title"),
       ),
     );
   }
